@@ -55,6 +55,8 @@ def build_network_graph(
             "id": "e_inet_rtr",
             "source": "internet",
             "target": "rtr1",
+            "source_port": "WAN-Demarc",
+            "target_port": "Gi0/0/0",
             "speed": f"{req.internet_bandwidth_mbps}M",
             "type": "copper",
             "label": f"{req.internet_bandwidth_mbps} Mbps",
@@ -79,6 +81,8 @@ def build_network_graph(
             "id": f"e_{fw_parent}_{fw_id}",
             "source": fw_parent,
             "target": fw_id,
+            "source_port": f"Gi0/0/{i + 1}" if has_router else "Demarc",
+            "target_port": "Gi1/1 (Outside)",
             "speed": f"{req.internet_bandwidth_mbps}M",
             "type": "copper",
             "label": f"{req.internet_bandwidth_mbps} Mbps",
@@ -90,6 +94,8 @@ def build_network_graph(
             "id": "e_fw_ha",
             "source": fw_nodes[0],
             "target": fw_nodes[1],
+            "source_port": "Gi1/8 (HA-Sync)",
+            "target_port": "Gi1/8 (HA-Sync)",
             "speed": "10G",
             "type": "fiber",
             "label": "HA Heartbeat",
@@ -113,11 +119,13 @@ def build_network_graph(
             "model": core_model,
         })
         # Connect firewalls to core
-        for fw_id in fw_nodes:
+        for f_idx, fw_id in enumerate(fw_nodes):
             edges.append({
                 "id": f"e_{fw_id}_{core_id}",
                 "source": fw_id,
                 "target": core_id,
+                "source_port": f"Gi1/{2 + i} (Inside)",
+                "target_port": f"Te1/0/{f_idx + 1}",
                 "speed": core_uplink_speed,
                 "type": "fiber",
                 "label": core_uplink_speed,
@@ -129,9 +137,11 @@ def build_network_graph(
             "id": "e_core_peer",
             "source": core_nodes[0],
             "target": core_nodes[1],
+            "source_port": "Fo1/0/23 (Po1)",
+            "target_port": "Fo1/0/23 (Po1)",
             "speed": "40G",
             "type": "fiber",
-            "label": "EtherChannel Peer Link",
+            "label": "EtherChannel (Po1)",
         })
 
     # 3. Server Switch & WLC (attached to Core)
@@ -145,14 +155,56 @@ def build_network_graph(
             "floor": None,
             "model": srv_items[0].model,
         })
-        for c_id in core_nodes:
+        for c_idx, c_id in enumerate(core_nodes):
             edges.append({
                 "id": f"e_{c_id}_srv_sw",
                 "source": c_id,
                 "target": "srv_sw",
+                "source_port": f"Te1/0/{10 + c_idx}",
+                "target_port": f"Te1/0/{47 + c_idx}",
                 "speed": "10G",
                 "type": "fiber",
                 "label": "10G",
+            })
+
+        # Attached Server Farms
+        nodes.append({
+            "id": "srv_farm",
+            "type": "server",
+            "label": "Enterprise Server Farm",
+            "layer": "endpoint",
+            "floor": "DC-Rack",
+            "model": "Cisco UCS C220 M6",
+        })
+        edges.append({
+            "id": "e_srv_sw_farm",
+            "source": "srv_sw",
+            "target": "srv_farm",
+            "source_port": "Gi1/0/1",
+            "target_port": "NIC-1 (Trunk)",
+            "speed": "10G",
+            "type": "fiber",
+            "label": "10G",
+        })
+
+        if req.servers.public_facing > 0:
+            nodes.append({
+                "id": "srv_dmz",
+                "type": "server",
+                "label": "DMZ Web / Proxy Farm",
+                "layer": "endpoint",
+                "floor": "DMZ",
+                "model": "Cisco UCS C220 M6",
+            })
+            edges.append({
+                "id": "e_srv_sw_dmz",
+                "source": "srv_sw",
+                "target": "srv_dmz",
+                "source_port": "Gi1/0/2",
+                "target_port": "NIC-1 (DMZ)",
+                "speed": "10G",
+                "type": "fiber",
+                "label": "10G DMZ",
             })
 
     wlc_items = [d for d in devices if d.role == "wlc"]
@@ -169,9 +221,11 @@ def build_network_graph(
             "id": "e_core_wlc",
             "source": core_nodes[0],
             "target": "wlc",
+            "source_port": "Te1/0/12",
+            "target_port": "TenGig0/0/1",
             "speed": "10G",
             "type": "fiber",
-            "label": "10G",
+            "label": "10G CAPWAP",
         })
 
     # 4. Distribution Layer (if three_tier)
@@ -192,11 +246,13 @@ def build_network_graph(
                 "model": dist_model,
             })
             # Connect distribution to all core switches
-            for c_id in core_nodes:
+            for c_idx, c_id in enumerate(core_nodes):
                 edges.append({
                     "id": f"e_{c_id}_{d_id}",
                     "source": c_id,
                     "target": d_id,
+                    "source_port": f"Te1/0/{i * 2 + c_idx + 3}",
+                    "target_port": f"Te1/1/{c_idx + 1}",
                     "speed": dist_uplink_speed,
                     "type": "fiber",
                     "label": dist_uplink_speed,
@@ -219,16 +275,62 @@ def build_network_graph(
 
             # Uplink targets: distribution if three_tier, else core
             uplink_targets = dist_nodes if topology == "three_tier" else core_nodes
-            for target_id in uplink_targets:
+            for t_idx, target_id in enumerate(uplink_targets):
                 edges.append({
                     "id": f"e_{target_id}_{acc_id}",
                     "source": target_id,
                     "target": acc_id,
+                    "source_port": f"Te1/0/{acc_idx}" if "10G" in access_uplink_speed else f"Gi1/0/{acc_idx}",
+                    "target_port": f"Gi1/0/{49 + t_idx}",
                     "speed": access_uplink_speed,
                     "type": "fiber" if "10G" in access_uplink_speed else "copper",
                     "label": access_uplink_speed,
                 })
+
+            # Representative Client Workstations & AP per access switch
+            pc_id = f"pc_{acc_idx}"
+            nodes.append({
+                "id": pc_id,
+                "type": "endpoint",
+                "label": f"Hosts ({item.location})",
+                "layer": "endpoint",
+                "floor": item.location,
+                "model": "Client Workstations",
+            })
+            edges.append({
+                "id": f"e_{acc_id}_{pc_id}",
+                "source": acc_id,
+                "target": pc_id,
+                "source_port": "Fa0/1-48",
+                "target_port": "FastEthernet0",
+                "speed": "1G",
+                "type": "copper",
+                "label": "1 Gbps",
+            })
+
+            if req.wifi_enabled:
+                ap_id = f"ap_{acc_idx}"
+                nodes.append({
+                    "id": ap_id,
+                    "type": "ap",
+                    "label": f"AP ({item.location})",
+                    "layer": "endpoint",
+                    "floor": item.location,
+                    "model": "Catalyst 9130AX",
+                })
+                edges.append({
+                    "id": f"e_{acc_id}_{ap_id}",
+                    "source": acc_id,
+                    "target": ap_id,
+                    "source_port": "Gi1/0/24 (PoE)",
+                    "target_port": "Gi0",
+                    "speed": "1G",
+                    "type": "copper",
+                    "label": "PoE+ 1G",
+                })
+
             acc_idx += 1
 
     return {"nodes": nodes, "edges": edges}
+
 

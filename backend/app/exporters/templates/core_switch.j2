@@ -1,0 +1,126 @@
+! ============================================================
+! Generated sample — review before deployment.
+! AI Network Design Assistant | Phase 9 Export
+! Device Role : L3 Core / Collapsed-Core Switch
+! Hostname     : {{ hostname }}
+! Variant      : {{ variant }}
+! Generated    : {{ generated_at }}
+! ============================================================
+
+hostname {{ hostname }}
+!
+! --- Global hardening ---
+no service password-recovery
+service timestamps log datetime msec
+service timestamps debug datetime msec
+no service config
+ip domain-name corp.local
+!
+! --- SSH Management ---
+crypto key generate rsa modulus 2048
+ip ssh version 2
+ip ssh authentication-retries 3
+ip ssh time-out 60
+!
+! --- AAA (RADIUS recommended when 802.1X is deployed) ---
+! aaa new-model
+! aaa authentication login default group radius local
+! aaa authorization exec default group radius local
+!
+! --- Management VLAN and VTY ACL ---
+ip access-list standard ACL_MGMT_VTY
+ permit {{ mgmt_subnet }}
+ deny any log
+!
+line vty 0 15
+ login local
+ transport input ssh
+ access-class ACL_MGMT_VTY in
+!
+line con 0
+ exec-timeout 5 0
+!
+! --- VLAN Definitions ---
+{% for vlan in vlans %}vlan {{ vlan.vlan_id }}
+ name {{ vlan.name }}
+{% endfor %}
+!
+! --- Switched Virtual Interfaces (SVIs) for inter-VLAN routing ---
+{% for subnet in subnets %}
+interface Vlan{{ subnet.vlan_id }}
+ description SVI for {{ subnet.name }}
+ ip address {{ subnet.gateway }} {{ subnet.mask }}
+{% if subnet.hsrp %}
+ ! HSRP (Hot Standby Router Protocol)
+ standby version 2
+ standby {{ subnet.vlan_id }} ip {{ subnet.hsrp.virtual }}
+ standby {{ subnet.vlan_id }} priority 110
+ standby {{ subnet.vlan_id }} preempt
+ standby {{ subnet.vlan_id }} timers 1 3
+{% endif %}
+{% if subnet.name == 'MGMT' %}
+ ! DHCP Snooping trusted on management SVI
+{% else %}
+ ip helper-address {{ mgmt_gateway }}
+{% endif %}
+ no shutdown
+!
+{% endfor %}
+!
+! --- Trunk Ports to Distribution / Access (adjust interface IDs) ---
+{% for i in range(uplink_port_count) %}
+interface {{ uplink_iface_prefix }}{{ i + 1 }}
+ description Trunk to Distribution/Access-{{ i + 1 }}
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk native vlan 999
+ switchport trunk allowed vlan {% for vlan in vlans %}{{ vlan.vlan_id }}{% if not loop.last %},{% endif %}{% endfor %}
+
+ spanning-tree portfast trunk
+{% if etherchannel %}
+ channel-group {{ i + 1 }} mode active
+{% endif %}
+ no shutdown
+!
+{% endfor %}
+!
+{% if routing_protocol == 'OSPF' %}
+! --- OSPF Routing (Area 0) ---
+router ospf 1
+ router-id {{ ospf_router_id }}
+{% for subnet in subnets %}
+ network {{ subnet.network }} {{ ospf_wildcard_from_prefix(subnet.prefix) }} area 0
+{% endfor %}
+ ! Suppress routing updates on user-facing VLANs
+{% for subnet in subnets %}
+ passive-interface Vlan{{ subnet.vlan_id }}
+{% endfor %}
+ ! Propagate default route learned from edge into OSPF domain
+ default-information originate
+!
+{% else %}
+! --- Static Routing ---
+ip route 0.0.0.0 0.0.0.0 [ISP_NEXT_HOP]
+!
+{% endif %}
+!
+! --- ACLs from security matrix ---
+! (Apply inbound on SVIs to enforce inter-VLAN policy)
+{% for acl in acl_entries %}
+ip access-list extended ACL_VLAN{{ acl.vlan_id }}_IN
+{% for rule in acl.rules %}
+ {{ rule }}
+{% endfor %}
+!
+{% endfor %}
+!
+! --- SNMP v3 ---
+! snmp-server group NETMON v3 priv
+! snmp-server user MONITOR NETMON v3 auth sha [AUTH_PASS] priv aes 128 [PRIV_PASS]
+!
+! --- Logging ---
+logging buffered 64000 informational
+logging trap informational
+! logging host [SYSLOG_SERVER_IP]
+!
+end

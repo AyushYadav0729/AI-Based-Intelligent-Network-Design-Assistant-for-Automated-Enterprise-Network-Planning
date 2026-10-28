@@ -24,4 +24,17 @@ export const saveProject = (payload) => api.post('/projects', payload)
 export const deleteProject = (id) => api.delete(`/projects/${id}`)
 export const compareProjects = (ids) => api.get(`/projects/compare?ids=${ids.join(',')}`)
 
+// LLM
+export const parseFreeText = (text) => api.post('/llm/parse', { text })
+
+// Exports — return blobs for browser download
+export const exportPdf = (payload) =>
+  api.post('/export/pdf', payload, { responseType: 'blob', timeout: 60_000 })
+
+export const exportConfig = (design) =>
+  api.post('/export/config', { design }, { responseType: 'blob', timeout: 30_000 })
+
+export const exportDiagramPng = (design) =>
+  api.post('/export/diagram-png', { design }, { responseType: 'blob', timeout: 30_000 })
+
 export default api

@@ -1,0 +1,126 @@
+! ============================================================
+! Generated sample — review before deployment.
+! AI Network Design Assistant | Phase 9 Export
+! Device Role : Access Switch (Layer 2)
+! Hostname     : {{ hostname }}
+! Floor        : {{ floor }}
+! Variant      : {{ variant }}
+! Generated    : {{ generated_at }}
+! ============================================================
+
+hostname {{ hostname }}
+!
+service timestamps log datetime msec
+no service config
+ip domain-name corp.local
+!
+crypto key generate rsa modulus 2048
+ip ssh version 2
+!
+! --- Management Interface ---
+interface Vlan10
+ description Management SVI
+ ip address {{ mgmt_ip }} {{ mgmt_mask }}
+ no shutdown
+!
+ip default-gateway {{ mgmt_gateway }}
+!
+! --- VTY ACL (SSH only from management subnet) ---
+ip access-list standard ACL_MGMT_VTY
+ permit {{ mgmt_subnet }}
+ deny any log
+!
+line vty 0 15
+ login local
+ transport input ssh
+ access-class ACL_MGMT_VTY in
+!
+line con 0
+ exec-timeout 5 0
+!
+! --- VLAN Definitions ---
+{% for vlan in vlans %}vlan {{ vlan.vlan_id }}
+ name {{ vlan.name }}
+{% endfor %}
+vlan 999
+ name BLACKHOLE_UNUSED
+!
+! --- Port Security Global Settings ---
+! (Applied per-interface below)
+!
+! --- DHCP Snooping (Trusted: uplink to distribution/core) ---
+ip dhcp snooping
+ip dhcp snooping vlan {% for vlan in vlans %}{{ vlan.vlan_id }}{% if not loop.last %},{% endif %}{% endfor %}
+
+no ip dhcp snooping information option
+!
+! --- Dynamic ARP Inspection ---
+ip arp inspection vlan {% for vlan in vlans %}{{ vlan.vlan_id }}{% if not loop.last %},{% endif %}{% endfor %}
+
+!
+! --- Access Ports per Department ---
+{% for dept_port in dept_port_ranges %}
+! Department: {{ dept_port.dept_name }} (VLAN {{ dept_port.vlan_id }})
+interface range {{ dept_port.iface_range }}
+ description Access port — {{ dept_port.dept_name }}
+ switchport mode access
+ switchport access vlan {{ dept_port.vlan_id }}
+ switchport nonegotiate
+{% if dept_port.dot1x %}
+ ! 802.1X Authentication
+ dot1x pae authenticator
+ dot1x port-control auto
+ authentication port-control auto
+ authentication host-mode multi-auth
+ mab
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+{% else %}
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+{% endif %}
+ ! Port security
+ switchport port-security maximum 2
+ switchport port-security violation restrict
+ switchport port-security aging time 10
+ switchport port-security aging type inactivity
+ switchport port-security
+ no shutdown
+!
+{% endfor %}
+!
+! --- Uplink Trunk Port(s) to Distribution/Core ---
+{% for uplink in uplink_ports %}
+interface {{ uplink.iface }}
+ description Uplink to {{ uplink.target }}
+ switchport trunk encapsulation dot1q
+ switchport mode trunk
+ switchport trunk native vlan 999
+ switchport trunk allowed vlan {% for vlan in vlans %}{{ vlan.vlan_id }}{% if not loop.last %},{% endif %}{% endfor %}
+
+ ip dhcp snooping trust
+ ip arp inspection trust
+ no spanning-tree portfast
+{% if uplink.etherchannel %}
+ channel-group {{ uplink.channel_group }} mode active
+{% endif %}
+ no shutdown
+!
+{% endfor %}
+!
+! --- Unused Ports — shutdown in VLAN 999 (blackhole) ---
+interface range {{ unused_iface_range }}
+ description UNUSED — shutdown
+ switchport mode access
+ switchport access vlan 999
+ shutdown
+!
+! --- Spanning Tree ---
+spanning-tree mode rapid-pvst
+spanning-tree portfast default
+!
+! --- Logging ---
+logging buffered 16000 informational
+! logging host [SYSLOG_SERVER_IP]
+!
+end

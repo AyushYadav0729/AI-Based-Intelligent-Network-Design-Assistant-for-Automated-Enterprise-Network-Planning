@@ -12,6 +12,7 @@ from app.db.session import engine, Base
 from app.api.routes_design import router as design_router
 from app.api.routes_projects import router as projects_router
 from app.api.routes_llm import router as llm_router
+from app.api.routes_export import router as export_router
 
 # Initialize database schema
 Base.metadata.create_all(bind=engine)
@@ -35,6 +36,7 @@ app.add_middleware(
 app.include_router(design_router)
 app.include_router(projects_router)
 app.include_router(llm_router)
+app.include_router(export_router)
 
 
 @app.get("/api/health", tags=["meta"])

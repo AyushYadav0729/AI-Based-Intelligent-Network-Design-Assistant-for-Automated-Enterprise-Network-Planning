@@ -8,6 +8,7 @@ import SecurityPanel from '../components/SecurityPanel'
 import ValidationPanel from '../components/ValidationPanel'
 import ComparePanel from '../components/ComparePanel'
 import DecisionExplainer from '../components/DecisionExplainer'
+import ExportPanel from '../components/ExportPanel'
 import { generateDesign, saveProject } from '../api/client'
 import { SAMPLE_SCENARIOS } from '../utils/sampleScenarios'
 
@@ -22,6 +23,7 @@ export default function WizardPage() {
   const [activeTab, setActiveTab] = useState('topology') // 'topology', 'ipvlan', 'devices', 'security', 'validation', 'compare'
   const [savedSuccess, setSavedSuccess] = useState(false)
   const [errorNotice, setErrorNotice] = useState(null)
+  const [diagramSnapshot, setDiagramSnapshot] = useState(null)
 
   const handleGenerate = async () => {
     setIsGenerating(true)
@@ -211,6 +213,7 @@ export default function WizardPage() {
               { id: 'security', label: '4. Security & ACLs' },
               { id: 'validation', label: `5. Validation (${currentResult.validation?.length || 0})` },
               { id: 'compare', label: '6. Compare All 3 Variants' },
+              { id: 'export', label: '7. Export & Save' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -228,12 +231,23 @@ export default function WizardPage() {
           </div>
 
           {/* ── Tab Content ── */}
-          {activeTab === 'topology' && (
+          {/* ── Topology Tab ── */}
+          <div
+            id="topology-diagram-container"
+            style={{
+              display: activeTab === 'topology' ? 'block' : 'none',
+            }}
+          >
             <TopologyDiagram
               graph={currentResult.graph}
               topologyName={currentResult.topology}
+              vlans={currentResult.vlans}
+              subnets={currentResult.subnets}
+              devices={currentResult.devices}
+              routing={currentResult.routing}
+              onSnapshot={setDiagramSnapshot}
             />
-          )}
+          </div>
 
           {activeTab === 'ipvlan' && (
             <IpVlanTable
@@ -265,6 +279,18 @@ export default function WizardPage() {
               summary={designResponse.comparison_summary}
               onSelectVariant={setActiveVariant}
               activeVariant={activeVariant}
+            />
+          )}
+
+          {activeTab === 'export' && (
+            <ExportPanel
+              design={currentResult}
+              requirements={requirements}
+              designResponse={designResponse}
+              activeVariant={activeVariant}
+              onSaveProject={handleSaveProject}
+              savedSuccess={savedSuccess}
+              diagramSnapshot={diagramSnapshot}
             />
           )}
 

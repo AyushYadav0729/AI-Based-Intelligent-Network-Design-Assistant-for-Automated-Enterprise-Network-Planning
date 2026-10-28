@@ -79,10 +79,37 @@ App available at: http://localhost:5173
 
 ---
 
-## Development Phases
+## Development Phases & Status
 
-| Phase | Description                        | Status     |
-|-------|------------------------------------|------------|
-| 1     | Project skeleton (this commit)     | ✅ Done    |
-| 2–6   | Core engine modules                | 🔜 Planned |
-| 7     | Full wizard UI + persistence       | 🔜 Planned |
+| Phase | Description | Status |
+|-------|-------------|--------|
+| **1** | Project Setup, Schemas & Device Catalog | ✅ Complete |
+| **2** | Core Algorithmic Engine (VLSM Subnetting & Addressing) | ✅ Complete |
+| **3** | Topology Selection & Graph Generation (Star, Collapsed Core, 3-Tier) | ✅ Complete |
+| **4** | Hardware BOM, Device Selection & Cost Estimation | ✅ Complete |
+| **5** | Design Rule Validator Engine (18 deterministic checks) | ✅ Complete |
+| **6** | Variant Generator (Balanced, Budget, Performance) & Pipeline | ✅ Complete |
+| **7** | Interactive Frontend Wizard (React Flow, IP tables, BOM, ACLs, Projects) | ✅ Complete |
+| **8** | Exporters (Cisco IOS CLI configs, ReportLab PDF reports, NetworkX PNGs) | ✅ Complete |
+| **9** | Testing, Verification & End-to-End Validation (97/97 tests passing) | ✅ Complete |
+
+---
+
+## Running Tests
+
+Run the complete test suite across all 9 phases:
+
+```bash
+cd backend
+pytest -v
+```
+
+All 97 unit and integration tests validate:
+- VLSM address calculations, prefix alignment, and gateway allocation
+- Topology threshold transitions (Star vs Collapsed-Core vs 3-Tier)
+- All 18 rule engine error/warning validators
+- Multi-variant synthesis and comparison engine
+- LLM prompt engineering, response parsing, and deterministic fallback
+- CLI configuration generation and ZIP packaging
+- ReportLab multi-section PDF generation and diagram rendering
+

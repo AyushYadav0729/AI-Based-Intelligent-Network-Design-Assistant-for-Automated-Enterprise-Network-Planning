@@ -1,0 +1,138 @@
+! ============================================================
+! Generated sample — review before deployment.
+! AI Network Design Assistant | Phase 9 Export
+! Device Role : Perimeter Firewall / Edge Router
+! Hostname     : {{ hostname }}
+! Variant      : {{ variant }}
+! Generated    : {{ generated_at }}
+! ============================================================
+!
+! NOTE: This is a representative template. Zone-based policies,
+! exact interface numbering, and VPN parameters must be adapted
+! to your specific firewall platform (e.g., Cisco ASA, FTD, Palo Alto).
+!
+hostname {{ hostname }}
+!
+! --- Interface Zones ---
+!
+! WAN Interface (outside zone — ISP uplink)
+interface GigabitEthernet0/0
+ description WAN — ISP Uplink
+ nameif outside
+ security-level 0
+ ip address dhcp setroute
+ ! For static: ip address [WAN_IP] [WAN_MASK]
+ no shutdown
+!
+! LAN Interface (inside zone — core/collapsed-core)
+interface GigabitEthernet0/1
+ description LAN — Inside Core Trunk
+ nameif inside
+ security-level 100
+ ip address {{ inside_ip }} {{ inside_mask }}
+ no shutdown
+!
+{% if dmz_enabled %}
+! DMZ Interface (semi-trusted — public-facing servers)
+interface GigabitEthernet0/2
+ description DMZ — Public-Facing Servers
+ nameif dmz
+ security-level 50
+ ip address {{ dmz_gateway }} {{ dmz_mask }}
+ no shutdown
+!
+{% endif %}
+!
+! --- NAT / PAT ---
+! Outbound PAT for all inside → internet traffic
+object network OBJ_INSIDE_ALL
+ subnet {{ inside_network }} {{ inside_netmask }}
+ nat (inside,outside) dynamic interface
+!
+{% if dmz_enabled %}
+! Static NAT entries for DMZ public-facing servers
+! (Replace [PUBLIC_IP_x] with real ISP-assigned IPs)
+{% for i in range(dmz_server_count) %}
+object network OBJ_DMZ_SERVER{{ i + 1 }}
+ host {{ dmz_first_host_prefix }}{{ i + 2 }}
+ nat (dmz,outside) static [PUBLIC_IP_{{ i + 1 }}]
+{% endfor %}
+!
+{% endif %}
+!
+! --- Access Control (Security Policies) ---
+!
+! Allow established/related inbound from outside
+access-list ACL_OUTSIDE_IN extended permit tcp any any established
+!
+{% if dmz_enabled %}
+! Allow HTTP/HTTPS to DMZ servers from internet
+access-list ACL_OUTSIDE_IN extended permit tcp any object-group OBJ_DMZ_SERVERS eq 80
+access-list ACL_OUTSIDE_IN extended permit tcp any object-group OBJ_DMZ_SERVERS eq 443
+!
+! Block DMZ from reaching internal LAN (critical isolation)
+access-list ACL_DMZ_IN extended deny ip {{ dmz_network }} {{ dmz_netmask }} {{ inside_network }} {{ inside_netmask }}
+access-list ACL_DMZ_IN extended permit ip {{ dmz_network }} {{ dmz_netmask }} any
+{% endif %}
+!
+! Allow all inside → outside
+access-list ACL_INSIDE_IN extended permit ip {{ inside_network }} {{ inside_netmask }} any
+!
+! Block everything else
+access-list ACL_OUTSIDE_IN extended deny ip any any log
+!
+access-group ACL_OUTSIDE_IN in interface outside
+{% if dmz_enabled %}
+access-group ACL_DMZ_IN in interface dmz
+{% endif %}
+access-group ACL_INSIDE_IN in interface inside
+!
+! --- Guest VLAN isolation (deny guest→internal) ---
+! (Enforced on core switch ACL_VLAN40_IN; firewall sees external-bound only)
+!
+{% if vpn_enabled %}
+! --- Remote Access VPN (IKEv2 / AnyConnect — template) ---
+! NOTE: Substitute real pre-shared key or certificate.
+!
+crypto ikev2 policy 1
+ encryption aes-256
+ integrity sha256
+ group 20
+ prf sha256
+ lifetime seconds 86400
+!
+crypto ikev2 enable outside
+!
+! AnyConnect Remote Access VPN pool
+ip local pool VPN_POOL 192.168.200.1 192.168.200.200 mask 255.255.255.0
+!
+group-policy GP_REMOTE_ACCESS internal
+group-policy GP_REMOTE_ACCESS attributes
+ split-tunnel-policy tunnelall
+ dns-server value {{ mgmt_gateway }}
+ vpn-idle-timeout 30
+!
+tunnel-group REMOTE_ACCESS_VPN type remote-access
+tunnel-group REMOTE_ACCESS_VPN general-attributes
+ address-pool VPN_POOL
+ default-group-policy GP_REMOTE_ACCESS
+tunnel-group REMOTE_ACCESS_VPN ipsec-attributes
+ ikev2 local-authentication pre-shared-key [CHANGE_ME]
+ ikev2 remote-authentication pre-shared-key [CHANGE_ME]
+!
+{% endif %}
+!
+! --- Management ---
+ssh {{ mgmt_subnet }} inside
+ssh timeout 10
+ssh version 2
+aaa authentication ssh console LOCAL
+username admin privilege 15 password 0 [CHANGE_ME]
+!
+! --- Logging ---
+logging enable
+logging buffered informational
+logging trap informational
+! logging host inside [SYSLOG_SERVER_IP]
+!
+end
