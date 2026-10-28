@@ -1,0 +1,82 @@
+{
+  "org_name": "St. Jude General Hospital",
+  "org_type": "hospital",
+  "floors": 4,
+  "departments": [
+    {
+      "name": "Emergency",
+      "users": 60,
+      "floor": 0,
+      "dept_type": "support",
+      "security_level": "critical",
+      "needs_guest_access": false,
+      "wired_printers": 4,
+      "notes": "Emergency care unit"
+    },
+    {
+      "name": "Wards",
+      "users": 150,
+      "floor": 1,
+      "dept_type": "support",
+      "security_level": "high",
+      "needs_guest_access": true,
+      "wired_printers": 6,
+      "notes": "Inpatient wards"
+    },
+    {
+      "name": "Radiology",
+      "users": 40,
+      "floor": 0,
+      "dept_type": "lab",
+      "security_level": "critical",
+      "needs_guest_access": false,
+      "wired_printers": 2,
+      "notes": "Imaging and diagnostics"
+    },
+    {
+      "name": "Pharmacy",
+      "users": 25,
+      "floor": 0,
+      "dept_type": "office",
+      "security_level": "high",
+      "needs_guest_access": false,
+      "wired_printers": 2,
+      "notes": "Central pharmacy"
+    },
+    {
+      "name": "Admin",
+      "users": 80,
+      "floor": 2,
+      "dept_type": "office",
+      "security_level": "medium",
+      "needs_guest_access": false,
+      "wired_printers": 4,
+      "notes": "Hospital administration"
+    },
+    {
+      "name": "Management",
+      "users": 20,
+      "floor": 3,
+      "dept_type": "management",
+      "security_level": "high",
+      "needs_guest_access": false,
+      "wired_printers": 2,
+      "notes": "Executive leadership"
+    }
+  ],
+  "servers": {
+    "count": 20,
+    "public_facing": 3
+  },
+  "wifi_enabled": true,
+  "wifi_user_ratio": 0.6,
+  "guest_wifi": true,
+  "remote_access_vpn": true,
+  "internet_bandwidth_mbps": 1000,
+  "redundancy": "full_ha",
+  "growth_percent": 30.0,
+  "growth_years": 5,
+  "budget": 120000.0,
+  "base_network": "10.0.0.0/16"
+}
+

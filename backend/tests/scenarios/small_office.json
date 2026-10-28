@@ -1,0 +1,52 @@
+{
+  "org_name": "Acme Small Office",
+  "org_type": "corporate",
+  "floors": 1,
+  "departments": [
+    {
+      "name": "Administration",
+      "users": 15,
+      "floor": 0,
+      "dept_type": "office",
+      "security_level": "medium",
+      "needs_guest_access": false,
+      "wired_printers": 1,
+      "notes": "General admin"
+    },
+    {
+      "name": "Sales",
+      "users": 20,
+      "floor": 0,
+      "dept_type": "office",
+      "security_level": "low",
+      "needs_guest_access": false,
+      "wired_printers": 1,
+      "notes": "Sales team"
+    },
+    {
+      "name": "Support",
+      "users": 15,
+      "floor": 0,
+      "dept_type": "support",
+      "security_level": "low",
+      "needs_guest_access": false,
+      "wired_printers": 1,
+      "notes": "Customer support desk"
+    }
+  ],
+  "servers": {
+    "count": 2,
+    "public_facing": 0
+  },
+  "wifi_enabled": true,
+  "wifi_user_ratio": 0.6,
+  "guest_wifi": false,
+  "remote_access_vpn": true,
+  "internet_bandwidth_mbps": 100,
+  "redundancy": "none",
+  "growth_percent": 20.0,
+  "growth_years": 3,
+  "budget": 15000.0,
+  "base_network": "10.0.0.0/16"
+}
+

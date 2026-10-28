@@ -1,0 +1,92 @@
+{
+  "org_name": "Nexus Cloud Technologies",
+  "org_type": "it_company",
+  "floors": 6,
+  "departments": [
+    {
+      "name": "Engineering",
+      "users": 400,
+      "floor": 2,
+      "dept_type": "engineering",
+      "security_level": "high",
+      "needs_guest_access": false,
+      "wired_printers": 8,
+      "notes": "Software development"
+    },
+    {
+      "name": "QA",
+      "users": 80,
+      "floor": 3,
+      "dept_type": "engineering",
+      "security_level": "medium",
+      "needs_guest_access": false,
+      "wired_printers": 2,
+      "notes": "Testing and automation"
+    },
+    {
+      "name": "DevOps",
+      "users": 40,
+      "floor": 1,
+      "dept_type": "datacenter_ops",
+      "security_level": "critical",
+      "needs_guest_access": false,
+      "wired_printers": 2,
+      "notes": "SRE and infrastructure"
+    },
+    {
+      "name": "HR",
+      "users": 20,
+      "floor": 4,
+      "dept_type": "hr",
+      "security_level": "medium",
+      "needs_guest_access": false,
+      "wired_printers": 2,
+      "notes": "Human resources"
+    },
+    {
+      "name": "Finance",
+      "users": 25,
+      "floor": 4,
+      "dept_type": "finance",
+      "security_level": "high",
+      "needs_guest_access": false,
+      "wired_printers": 2,
+      "notes": "Accounting and payroll"
+    },
+    {
+      "name": "Management",
+      "users": 15,
+      "floor": 5,
+      "dept_type": "management",
+      "security_level": "high",
+      "needs_guest_access": false,
+      "wired_printers": 1,
+      "notes": "C-suite and directors"
+    },
+    {
+      "name": "Sales",
+      "users": 60,
+      "floor": 0,
+      "dept_type": "office",
+      "security_level": "low",
+      "needs_guest_access": true,
+      "wired_printers": 3,
+      "notes": "Sales and marketing"
+    }
+  ],
+  "servers": {
+    "count": 40,
+    "public_facing": 5
+  },
+  "wifi_enabled": true,
+  "wifi_user_ratio": 0.7,
+  "guest_wifi": true,
+  "remote_access_vpn": true,
+  "internet_bandwidth_mbps": 2000,
+  "redundancy": "full_ha",
+  "growth_percent": 40.0,
+  "growth_years": 3,
+  "budget": 250000.0,
+  "base_network": "10.0.0.0/16"
+}
+

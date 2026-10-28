@@ -1,0 +1,62 @@
+{
+  "org_name": "Pine Valley Academy",
+  "org_type": "school",
+  "floors": 3,
+  "departments": [
+    {
+      "name": "Admin",
+      "users": 20,
+      "floor": 0,
+      "dept_type": "office",
+      "security_level": "medium",
+      "needs_guest_access": false,
+      "wired_printers": 2,
+      "notes": "Principal and administration"
+    },
+    {
+      "name": "Staff",
+      "users": 60,
+      "floor": 1,
+      "dept_type": "office",
+      "security_level": "low",
+      "needs_guest_access": false,
+      "wired_printers": 3,
+      "notes": "Faculty rooms"
+    },
+    {
+      "name": "Computer Lab",
+      "users": 80,
+      "floor": 2,
+      "dept_type": "lab",
+      "security_level": "medium",
+      "needs_guest_access": false,
+      "wired_printers": 4,
+      "notes": "Student computer labs"
+    },
+    {
+      "name": "Library",
+      "users": 30,
+      "floor": 0,
+      "dept_type": "office",
+      "security_level": "low",
+      "needs_guest_access": true,
+      "wired_printers": 2,
+      "notes": "Campus library"
+    }
+  ],
+  "servers": {
+    "count": 6,
+    "public_facing": 2
+  },
+  "wifi_enabled": true,
+  "wifi_user_ratio": 0.8,
+  "guest_wifi": true,
+  "remote_access_vpn": true,
+  "internet_bandwidth_mbps": 500,
+  "redundancy": "dual_uplink",
+  "growth_percent": 25.0,
+  "growth_years": 5,
+  "budget": 45000.0,
+  "base_network": "10.0.0.0/16"
+}
+
