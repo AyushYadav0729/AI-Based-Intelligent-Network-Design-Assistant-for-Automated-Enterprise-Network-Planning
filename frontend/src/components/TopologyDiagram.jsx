@@ -370,11 +370,10 @@ export function CiscoDeviceNode({ data, selected }) {
 
   return (
     <div
-      className={`group relative flex flex-col items-center p-2 rounded-xl transition-all duration-150 cursor-pointer ${
-        selected
+      className={`group relative flex flex-col items-center p-2 rounded-xl transition-all duration-150 cursor-pointer ${selected
           ? 'ring-2 ring-brand-500 shadow-xl scale-105'
           : 'hover:scale-105 hover:drop-shadow-md'
-      }`}
+        }`}
       style={{ minWidth: '150px' }}
     >
       {/* Connection Handles (Bidirectional) */}
@@ -397,18 +396,16 @@ export function CiscoDeviceNode({ data, selected }) {
       {/* Device Typography Badge (Authentic Packet Tracer Labeling) */}
       <div className="mt-1 text-center select-none">
         <div
-          className={`font-mono font-bold text-xs leading-tight tracking-tight ${
-            isDark ? 'text-slate-100' : 'text-slate-900'
-          }`}
+          className={`font-mono font-bold text-xs leading-tight tracking-tight ${isDark ? 'text-slate-100' : 'text-slate-900'
+            }`}
         >
           {raw.label}
         </div>
 
         {/* Catalog Model */}
         <div
-          className={`text-[10px] font-medium leading-tight truncate max-w-[140px] ${
-            isDark ? 'text-slate-400' : 'text-slate-500'
-          }`}
+          className={`text-[10px] font-medium leading-tight truncate max-w-[140px] ${isDark ? 'text-slate-400' : 'text-slate-500'
+            }`}
         >
           {raw.model || raw.type}
         </div>
@@ -545,11 +542,10 @@ Uptime is 4 weeks, 2 days, 16 hours, 4 minutes`
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`py-2 px-3.5 rounded-t-lg transition border-b-2 ${
-                activeTab === tab.id
+              className={`py-2 px-3.5 rounded-t-lg transition border-b-2 ${activeTab === tab.id
                   ? 'bg-white border-brand-600 text-brand-700 shadow-sm'
                   : 'border-transparent text-slate-600 hover:text-slate-900'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -579,11 +575,10 @@ Uptime is 4 weeks, 2 days, 16 hours, 4 minutes`
                     {Array.from({ length: 24 }).map((_, i) => (
                       <div
                         key={i}
-                        className={`h-4 rounded flex items-center justify-center text-[8px] font-mono font-bold ${
-                          i < 6 || i === 23
+                        className={`h-4 rounded flex items-center justify-center text-[8px] font-mono font-bold ${i < 6 || i === 23
                             ? 'bg-emerald-500 text-slate-950 shadow-[0_0_8px_rgba(34,197,94,0.6)]'
                             : 'bg-slate-800 text-slate-500'
-                        }`}
+                          }`}
                         title={`Port Gi1/0/${i + 1}: ${i < 6 || i === 23 ? 'Link Up (1000M)' : 'No Link'}`}
                       >
                         {i + 1}
@@ -811,10 +806,10 @@ export default function TopologyDiagram({
       const strokeColor = isSerial
         ? '#ef4444'
         : isFiber
-        ? '#ea580c'
-        : isDark
-        ? '#94a3b8'
-        : '#334155'
+          ? '#ea580c'
+          : isDark
+            ? '#94a3b8'
+            : '#334155'
 
       const labelParts = []
       if (showPorts && (e.source_port || e.target_port)) {
@@ -919,17 +914,15 @@ export default function TopologyDiagram({
           <button
             type="button"
             onClick={() => setSimulationMode(!simulationMode)}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition border ${
-              simulationMode
+            className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition border ${simulationMode
                 ? 'bg-amber-100 text-amber-800 border-amber-300 shadow-sm'
                 : 'bg-emerald-50 text-emerald-700 border-emerald-300'
-            }`}
+              }`}
             title="Toggle between Realtime Mode and Simulation Mode"
           >
             <span
-              className={`w-2 h-2 rounded-full ${
-                simulationMode ? 'bg-amber-500 animate-ping' : 'bg-emerald-500'
-              }`}
+              className={`w-2 h-2 rounded-full ${simulationMode ? 'bg-amber-500 animate-ping' : 'bg-emerald-500'
+                }`}
             />
             {simulationMode ? 'Simulation Mode' : 'Realtime Mode'}
           </button>
@@ -957,11 +950,10 @@ export default function TopologyDiagram({
           <button
             type="button"
             onClick={() => setShowEndpoints(!showEndpoints)}
-            className={`px-2.5 py-1 rounded-lg border font-semibold text-xs transition ${
-              showEndpoints
+            className={`px-2.5 py-1 rounded-lg border font-semibold text-xs transition ${showEndpoints
                 ? 'bg-brand-50 text-brand-700 border-brand-300'
                 : 'bg-slate-100 text-slate-500 border-slate-200'
-            }`}
+              }`}
             title="Toggle PC & Server Endpoints"
           >
             💻 Endpoints: {showEndpoints ? 'ON' : 'OFF'}
@@ -971,11 +963,10 @@ export default function TopologyDiagram({
           <button
             type="button"
             onClick={() => setShowPorts(!showPorts)}
-            className={`px-2.5 py-1 rounded-lg border font-semibold text-xs transition ${
-              showPorts
+            className={`px-2.5 py-1 rounded-lg border font-semibold text-xs transition ${showPorts
                 ? 'bg-brand-50 text-brand-700 border-brand-300'
                 : 'bg-slate-100 text-slate-500 border-slate-200'
-            }`}
+              }`}
             title="Toggle Interface Port Designators (Gi0/1, Te1/1/1)"
           >
             🏷️ Ports
@@ -1007,9 +998,8 @@ export default function TopologyDiagram({
       <div
         ref={diagramRef}
         id="cisco-topology-canvas"
-        className={`border rounded-2xl overflow-hidden h-[620px] relative shadow-inner transition-colors duration-200 ${
-          isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50/70 border-slate-200'
-        }`}
+        className={`border rounded-2xl overflow-hidden h-[620px] relative shadow-inner transition-colors duration-200 ${isDark ? 'bg-slate-950 border-slate-800' : 'bg-slate-50/70 border-slate-200'
+          }`}
       >
         <ReactFlow
           nodes={nodes}
@@ -1032,9 +1022,8 @@ export default function TopologyDiagram({
           />
 
           <Controls
-            className={`shadow rounded-xl border ${
-              isDark ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-800'
-            }`}
+            className={`shadow rounded-xl border ${isDark ? 'bg-slate-900 border-slate-700 text-white' : 'bg-white border-slate-200 text-slate-800'
+              }`}
           />
 
           <MiniMap
@@ -1048,9 +1037,8 @@ export default function TopologyDiagram({
               return '#94a3b8'
             }}
             maskColor={isDark ? 'rgba(15, 23, 42, 0.7)' : 'rgba(241, 245, 249, 0.7)'}
-            className={`rounded-xl border ${
-              isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
-            }`}
+            className={`rounded-xl border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
+              }`}
           />
         </ReactFlow>
       </div>
